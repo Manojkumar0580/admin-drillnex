@@ -1,6 +1,7 @@
 'use client';
 import ResourceTable, { Column } from '@/components/ResourceTable';
-import { COMPANIES, WELL_STATUSES } from '@/lib/mock';
+import { WELL_STATUSES } from '@/lib/mock';
+import { useCompanies } from '@/lib/useCompanies';
 
 const columns: Column[] = [
   { key: 'uid', label: 'UID' },
@@ -18,6 +19,7 @@ const rows = [
 ];
 
 export default function Page() {
+  const companies = (useCompanies().data ?? []).map((x) => x.name);
   return (
     <ResourceTable
       pageTitle="RTOC"
@@ -25,7 +27,7 @@ export default function Page() {
       columns={columns}
       rows={rows}
       filters={[
-        { key: 'customer', label: 'Customer', options: COMPANIES, placeholder: 'Select a Company' },
+        { key: 'customer', label: 'Customer', options: companies, placeholder: 'All companies' },
         { key: 'status', label: 'Well Status', options: WELL_STATUSES, placeholder: 'All statuses' },
       ]}
     />

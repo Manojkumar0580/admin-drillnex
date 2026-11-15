@@ -4,7 +4,9 @@ import { FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Btn, FormRow, Notice, useColors } from '@/components/ui';
-import { api, Company, PadRow, send, WellFull } from '@/lib/adminApi';
+import { CompanySelect } from '@/components/SearchSelect';
+import { api, PadRow, send, WellFull } from '@/lib/adminApi';
+import { useCompanies } from '@/lib/useCompanies';
 
 interface FormState { companyId: string; name: string; notes: string; wellIds: string[] }
 const EMPTY: FormState = { companyId: '', name: '', notes: '', wellIds: [] };
@@ -22,7 +24,7 @@ export default function PadsPage() {
   const [deleting, setDeleting] = useState<PadRow | null>(null);
   const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
-  const companies = useQuery({ queryKey: ['companies'], queryFn: () => api<{ data: Company[] }>('companies').then((r) => r.data) });
+  const companies = useCompanies();
   const wells = useQuery({ queryKey: ['wells', 'full'], queryFn: () => api<{ data: WellFull[] }>('wells').then((r) => r.data) });
   const pads = useQuery({ queryKey: ['pads'], queryFn: () => api<{ data: PadRow[] }>('pads').then((r) => r.data) });
 
@@ -103,10 +105,7 @@ export default function PadsPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="pc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <select id="pc" value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="text-sm px-3 py-2 rounded-lg border outline-none min-w-[190px]" style={c.inputStyle}>
-                <option value="">All companies</option>
-                {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
+              <CompanySelect id="pc" width={220} value={companyFilter} onChange={setCompanyFilter} allLabel="All companies" />
             </div>
             <input aria-label="Search pads" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 220 }} />
           </div>
@@ -117,7 +116,7 @@ export default function PadsPage() {
           <table className="w-full text-sm" style={{ color: c.text }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${c.border}` }}>
-                {['Name', 'Company', 'Wells', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
+                {['Pad Name', 'Company', 'Wells', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -165,13 +164,10 @@ export default function PadsPage() {
         >
           <form id="pad-form" onSubmit={onSubmit} className="space-y-3">
             <FormRow label="Company" htmlFor="pd-company">
-              <select id="pd-company" value={form.companyId} disabled={editing !== 'new'} onChange={(e) => setForm({ ...form, companyId: e.target.value, wellIds: [] })} className={input} style={{ ...c.inputStyle, opacity: editing !== 'new' ? 0.7 : 1 }}>
-                <option value="">Select a company</option>
-                {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
+              <CompanySelect id="pd-company" value={form.companyId} disabled={editing !== 'new'} onChange={(v) => setForm({ ...form, companyId: v, wellIds: [] })} />
             </FormRow>
-            <FormRow label="Name" htmlFor="pd-name" hint="Unique within the company.">
-              <input id="pd-name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Name" className={input} style={c.inputStyle} />
+            <FormRow label="Pad Name" htmlFor="pd-name" hint="Unique within the company.">
+              <input id="pd-name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Pad Name" className={input} style={c.inputStyle} />
             </FormRow>
             <FormRow label="Notes" htmlFor="pd-notes">
               <input id="pd-notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Optional" className={input} style={c.inputStyle} />

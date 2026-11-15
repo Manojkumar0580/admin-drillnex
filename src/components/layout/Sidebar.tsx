@@ -121,16 +121,15 @@ export default function Sidebar() {
   const { theme, sidebarCollapsed, setSidebarCollapsed } = useAdminStore();
   const pathname = usePathname();
   const { data: admin } = useAdminSession();
-  const [openGroups, setOpenGroups] = useState<string[]>(() =>
-    NAV.filter((n) => n.children?.some((c) => pathname.startsWith(c.href))).map((n) => n.label)
+  // Accordion: only one group stays open at a time.
+  const [openGroup, setOpenGroup] = useState<string | null>(
+    () => NAV.find((n) => n.children?.some((c) => pathname.startsWith(c.href)))?.label ?? null
   );
 
   const dark = theme === 'dark';
 
   const toggleGroup = (label: string) => {
-    setOpenGroups((prev) =>
-      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
-    );
+    setOpenGroup((prev) => (prev === label ? null : label));
   };
 
   return (
@@ -182,7 +181,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-2 scrollbar-hide">
         {NAV.map((item) => {
           const isActive = item.href ? pathname === item.href || pathname.startsWith(item.href) : false;
-          const isOpen = openGroups.includes(item.label);
+          const isOpen = openGroup === item.label;
 
           if (item.href) {
             return (

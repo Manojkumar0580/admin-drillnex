@@ -4,20 +4,23 @@ import { FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Badge, Btn, FormRow, Notice, Tone, useColors } from '@/components/ui';
-import { api, Company, PadRow, send, WellFull } from '@/lib/adminApi';
+import SearchSelect, { CompanySelect } from '@/components/SearchSelect';
+import { api, PadRow, RigRow, send, WellFull } from '@/lib/adminApi';
+import { useCompanies } from '@/lib/useCompanies';
 
-const STATUSES = ['planning', 'drilling', 'completed', 'suspended', 'abandoned'] as const;
+const STATUSES = ['active', 'paused', 'completed'] as const;
 const TYPES = ['vertical', 'directional', 'horizontal', 'lateral'] as const;
-const STATUS_TONE: Record<(typeof STATUSES)[number], Tone> = { planning: 'gray', drilling: 'green', completed: 'blue', suspended: 'amber', abandoned: 'red' };
+const STATUS_TONE: Record<(typeof STATUSES)[number], Tone> = { active: 'green', paused: 'amber', completed: 'blue' };
+const STATUS_LABEL: Record<(typeof STATUSES)[number], string> = { active: 'Active', paused: 'Paused', completed: 'Completed' };
 
 interface FormState {
-  companyId: string; name: string; wellNumber: string; operator: string; contractor: string;
+  companyId: string; rigId: string; name: string; wellNumber: string; operator: string; contractor: string;
   status: (typeof STATUSES)[number]; type: (typeof TYPES)[number];
   field: string; basin: string; country: string; lat: string; lng: string;
   targetDepth: string; currentDepth: string; spudDate: string;
 }
 const EMPTY: FormState = {
-  companyId: '', name: '', wellNumber: '', operator: '', contractor: '', status: 'planning', type: 'vertical',
+  companyId: '', rigId: '', name: '', wellNumber: '', operator: '', contractor: '', status: 'active', type: 'vertical',
   field: '', basin: '', country: '', lat: '', lng: '', targetDepth: '', currentDepth: '', spudDate: '',
 };
 
@@ -35,11 +38,14 @@ export default function WellsPage() {
   const [deleting, setDeleting] = useState<WellFull | null>(null);
   const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
-  const companies = useQuery({ queryKey: ['companies'], queryFn: () => api<{ data: Company[] }>('companies').then((r) => r.data) });
+  const companies = useCompanies();
+  const rigs = useQuery({ queryKey: ['rigs'], queryFn: () => api<{ data: RigRow[] }>('rigs').then((r) => r.data) });
   const wells = useQuery({ queryKey: ['wells', 'full'], queryFn: () => api<{ data: WellFull[] }>('wells').then((r) => r.data) });
   const pads = useQuery({ queryKey: ['pads'], queryFn: () => api<{ data: PadRow[] }>('pads').then((r) => r.data) });
   const padName = useMemo(() => new Map((pads.data ?? []).map((p) => [p.id, p.name])), [pads.data]);
 
+  // Which rig is on which well (the link is stored on the rig).
+  const rigOfWell = useMemo(() => new Map((rigs.data ?? []).filter((r) => r.currentWellId).map((r) => [r.currentWellId as string, r])), [rigs.data]);
   const companyName = useMemo(() => new Map((companies.data ?? []).map((x) => [x.id, x.name])), [companies.data]);
 
   const rows = useMemo(() => {
@@ -53,11 +59,20 @@ export default function WellsPage() {
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ['wells'] });
+    qc.invalidateQueries({ queryKey: ['rigs'] });
     qc.invalidateQueries({ queryKey: ['companies'] }); // well counts
   };
 
+  /** The rig <-> well link lives on the rig: free the old rig, then put the chosen rig on this well. */
+  async function syncRig(wellId: string) {
+    const current = rigOfWell.get(wellId);
+    if (current?.id === form.rigId || (!current && !form.rigId)) return;
+    if (current) await api(`rigs/${current.id}`, send('PATCH', { currentWellId: null }));
+    if (form.rigId) await api(`rigs/${form.rigId}`, send('PATCH', { currentWellId: wellId }));
+  }
+
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const lat = num(form.lat), lng = num(form.lng);
       if ((lat === undefined) !== (lng === undefined)) throw new Error('Give both latitude and longitude, or leave both empty');
       const body: Record<string, unknown> = {
@@ -71,12 +86,16 @@ export default function WellsPage() {
         body.companyId = form.companyId;
         if (lat !== undefined) { body.lat = lat; body.lng = lng; }
         if (form.spudDate) body.spudDate = form.spudDate;
-        return api('wells', send('POST', body));
+        const created = await api<{ data: { id: string } }>('wells', send('POST', body));
+        await syncRig(created.data.id);
+        return created;
       }
       // On edit, empty means "clear it".
       body.lat = lat ?? null; body.lng = lng ?? null;
       body.spudDate = form.spudDate || null;
-      return api(`wells/${(editing as WellFull).id}`, send('PATCH', body));
+      const updated = await api(`wells/${(editing as WellFull).id}`, send('PATCH', body));
+      await syncRig((editing as WellFull).id);
+      return updated;
     },
     onSuccess: () => { setEditing(null); setNotice({ kind: 'ok', text: 'Well saved.' }); refresh(); },
     onError: (e: Error) => setFormError(e.message),
@@ -97,7 +116,7 @@ export default function WellsPage() {
     setForm(target === 'new'
       ? { ...EMPTY, companyId: companyFilter }
       : {
-          companyId: target.companyId, name: target.name, wellNumber: target.wellNumber, operator: target.operator, contractor: target.contractor,
+          companyId: target.companyId, rigId: rigOfWell.get(target.id)?.id ?? '', name: target.name, wellNumber: target.wellNumber, operator: target.operator, contractor: target.contractor,
           status: target.status, type: target.type, field: target.field, basin: target.basin, country: target.country,
           lat: target.lat === null ? '' : String(target.lat), lng: target.lng === null ? '' : String(target.lng),
           targetDepth: String(target.targetDepth), currentDepth: String(target.currentDepth),
@@ -114,6 +133,8 @@ export default function WellsPage() {
   }
 
   const input = 'w-full text-sm px-3 py-2 rounded-lg border outline-none';
+  const rigChoices = (rigs.data ?? []).filter((r) => r.companyId === form.companyId);
+  const myWellId = editing && editing !== 'new' ? editing.id : '';
   const Text = ({ k, label, req, ph, type = 'text', step }: { k: keyof FormState; label: string; req?: boolean; ph?: string; type?: string; step?: string }) => (
     <FormRow label={label} htmlFor={`w-${k}`}>
       <input id={`w-${k}`} type={type} step={step} required={req} value={form[k]} placeholder={ph ?? label}
@@ -135,17 +156,11 @@ export default function WellsPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="wc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <select id="wc" value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="text-sm px-3 py-2 rounded-lg border outline-none min-w-[190px]" style={c.inputStyle}>
-                <option value="">All companies</option>
-                {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
+              <CompanySelect id="wc" width={220} value={companyFilter} onChange={setCompanyFilter} allLabel="All companies" />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="ws" className="text-xs font-semibold" style={{ color: c.text }}>Status:</label>
-              <select id="ws" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-sm px-3 py-2 rounded-lg border outline-none" style={c.inputStyle}>
-                <option value="">All</option>
-                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <SearchSelect id="ws" width={150} value={statusFilter} onChange={setStatusFilter} allLabel="All" options={STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] }))} />
             </div>
             <input aria-label="Search wells" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 200 }} />
           </div>
@@ -156,7 +171,7 @@ export default function WellsPage() {
           <table className="w-full text-sm" style={{ color: c.text }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${c.border}` }}>
-                {['Name', 'Well No.', 'Company', 'Pad', 'Field', 'Country', 'Type', 'Status', 'Depth (ft)', 'Operator', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
+                {['Name', 'Well No.', 'Company', 'Rig', 'Pad', 'Field', 'Country', 'Type', 'Status', 'Depth (ft)', 'Operator', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -165,11 +180,12 @@ export default function WellsPage() {
                   <td className="py-3 pr-4 font-medium">{w.name}</td>
                   <td className="py-3 pr-4">{w.wellNumber}</td>
                   <td className="py-3 pr-4">{companyName.get(w.companyId) ?? '—'}</td>
+                  <td className="py-3 pr-4">{rigOfWell.get(w.id)?.name ?? <span style={{ color: c.muted }}>none</span>}</td>
                   <td className="py-3 pr-4">{w.padId ? padName.get(w.padId) ?? '—' : <span style={{ color: c.muted }}>none</span>}</td>
                   <td className="py-3 pr-4">{w.field}{w.basin ? <div className="text-xs" style={{ color: c.muted }}>{w.basin}</div> : null}</td>
                   <td className="py-3 pr-4">{w.country}</td>
                   <td className="py-3 pr-4 capitalize">{w.type}</td>
-                  <td className="py-3 pr-4"><Badge tone={STATUS_TONE[w.status]}>{w.status}</Badge></td>
+                  <td className="py-3 pr-4"><Badge tone={STATUS_TONE[w.status] ?? 'gray'}>{STATUS_LABEL[w.status] ?? w.status}</Badge></td>
                   <td className="py-3 pr-4 whitespace-nowrap">{w.currentDepth.toLocaleString()} / {w.targetDepth.toLocaleString()}</td>
                   <td className="py-3 pr-4">{w.operator}</td>
                   <td className="py-2 whitespace-nowrap text-right">
@@ -180,10 +196,10 @@ export default function WellsPage() {
                   </td>
                 </tr>
               ))}
-              {wells.isLoading && <tr><td colSpan={11} className="py-8 text-center" style={{ color: c.muted }}>Loading…</td></tr>}
-              {wells.isError && <tr><td colSpan={11} className="py-8 text-center text-red-400">{(wells.error as Error).message}</td></tr>}
+              {wells.isLoading && <tr><td colSpan={12} className="py-8 text-center" style={{ color: c.muted }}>Loading…</td></tr>}
+              {wells.isError && <tr><td colSpan={12} className="py-8 text-center text-red-400">{(wells.error as Error).message}</td></tr>}
               {!wells.isLoading && !wells.isError && rows.length === 0 && (
-                <tr><td colSpan={11} className="py-8 text-center" style={{ color: c.muted }}>No wells yet. Click New Well to add one.</td></tr>
+                <tr><td colSpan={12} className="py-8 text-center" style={{ color: c.muted }}>No wells yet. Click New Well to add one.</td></tr>
               )}
             </tbody>
           </table>
@@ -205,19 +221,23 @@ export default function WellsPage() {
           <form id="well-form" onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
             <div className="space-y-3">
               <FormRow label="Company" htmlFor="w-company">
-                <select id="w-company" value={form.companyId} disabled={editing !== 'new'} onChange={(e) => setForm({ ...form, companyId: e.target.value })} className={input} style={{ ...c.inputStyle, opacity: editing !== 'new' ? 0.7 : 1 }}>
-                  <option value="">Select a company</option>
-                  {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-                </select>
+                <CompanySelect id="w-company" value={form.companyId} disabled={editing !== 'new'} onChange={(v) => setForm({ ...form, companyId: v, rigId: '' })} />
+              </FormRow>
+              <FormRow label="Rig" htmlFor="w-rig" hint="A rig can be on one well at a time.">
+                <SearchSelect id="w-rig" value={form.rigId} onChange={(v) => setForm({ ...form, rigId: v })} disabled={!form.companyId}
+                  allLabel="No rig" placeholder={form.companyId ? 'Select a rig' : 'Select a company first'}
+                  emptyText="No rigs for this company yet. Add one under WITSML Settings, Rigs."
+                  options={rigChoices.map((r) => {
+                    const other = r.currentWellId && r.currentWellId !== myWellId;
+                    return { value: r.id, label: r.name, disabled: !!other, hint: other ? `on ${r.currentWell?.name ?? 'another well'}` : undefined };
+                  })} />
               </FormRow>
               {Text({ k: 'name', label: 'Name', req: true })}
               {Text({ k: 'wellNumber', label: 'Well Number', req: true, ph: 'Unique within the company' })}
               {Text({ k: 'operator', label: 'Operator', req: true })}
               {Text({ k: 'contractor', label: 'Contractor' })}
               <FormRow label="Status" htmlFor="w-status">
-                <select id="w-status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as FormState['status'] })} className={input} style={c.inputStyle}>
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <SearchSelect id="w-status" value={form.status} onChange={(v) => setForm({ ...form, status: v as FormState['status'] })} options={STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] }))} />
               </FormRow>
               <FormRow label="Type" htmlFor="w-type">
                 <select id="w-type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as FormState['type'] })} className={input} style={c.inputStyle}>

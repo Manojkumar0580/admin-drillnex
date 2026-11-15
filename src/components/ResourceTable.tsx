@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useAdminStore } from '@/store/useAdminStore';
 import Modal from '@/components/Modal';
+import SearchSelect from '@/components/SearchSelect';
 
 export type Row = Record<string, string>;
 
@@ -137,15 +138,14 @@ export default function ResourceTable({
             {filters.map((f) => (
               <div key={f.key} className="flex flex-col gap-1">
                 <label className="text-xs font-semibold" style={{ color: text }}>{f.label}</label>
-                <select
+                <SearchSelect
+                  width={200}
                   value={filterValues[f.key] ?? ''}
-                  onChange={(e) => { setFilterValues((v) => ({ ...v, [f.key]: e.target.value })); setPage(0); }}
-                  className="text-sm px-3 py-2 rounded-lg border outline-none min-w-[190px]"
-                  style={inputStyle}
-                >
-                  <option value="">{f.placeholder}</option>
-                  {f.options.map((o) => <option key={o}>{o}</option>)}
-                </select>
+                  onChange={(v) => { setFilterValues((fv) => ({ ...fv, [f.key]: v })); setPage(0); }}
+                  allLabel={f.placeholder}
+                  options={f.options.map((o) => ({ value: o, label: o }))}
+                  emptyText="Nothing to show"
+                />
               </div>
             ))}
             <div className="flex items-center rounded-lg border overflow-hidden" style={{ borderColor: border }}>
@@ -257,11 +257,9 @@ export default function ResourceTable({
                 <label htmlFor={`f-${f.key}`} className="text-sm font-semibold sm:text-right" style={{ color: text }}>{f.label}</label>
                 <div>
                   {f.type === 'select' ? (
-                    <select id={`f-${f.key}`} value={form[f.key] ?? ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                      className="w-full text-sm px-3 py-2 rounded-lg border outline-none" style={inputStyle}>
-                      <option value="">Select</option>
-                      {f.options?.map((o) => <option key={o}>{o}</option>)}
-                    </select>
+                    <SearchSelect id={`f-${f.key}`} value={form[f.key] ?? ''} onChange={(v) => setForm({ ...form, [f.key]: v })}
+                      placeholder="Select" options={(f.options ?? []).map((o) => ({ value: o, label: o }))}
+                      emptyText={f.key === 'company' ? 'No companies yet. Add one under Administration → Companies.' : 'Nothing to show'} />
                   ) : f.type === 'checkbox' ? (
                     <input id={`f-${f.key}`} type="checkbox" checked={form[f.key] === 'Yes'}
                       onChange={(e) => setForm({ ...form, [f.key]: e.target.checked ? 'Yes' : 'No' })} />

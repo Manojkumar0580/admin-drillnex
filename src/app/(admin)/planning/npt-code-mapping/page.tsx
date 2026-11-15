@@ -1,6 +1,6 @@
 'use client';
 import ResourceTable, { Column, Field } from '@/components/ResourceTable';
-import { COMPANIES } from '@/lib/mock';
+import { useCompanies } from '@/lib/useCompanies';
 
 const columns: Column[] = [
   { key: 'company', label: 'Company' },
@@ -8,8 +8,8 @@ const columns: Column[] = [
   { key: 'moblizeCode', label: 'Moblize NPT Code' },
 ];
 
-const fields: Field[] = [
-  { key: 'company', label: 'Company', type: 'select', options: COMPANIES, required: true },
+const fieldsFor = (companies: string[]): Field[] => [
+  { key: 'company', label: 'Company', type: 'select', options: companies, required: true },
   { key: 'sourceCode', label: 'Source Code', required: true },
   { key: 'moblizeCode', label: 'Moblize NPT Code', type: 'select', options: ['NPT-01', 'NPT-02', 'NPT-03'], required: true },
 ];
@@ -20,6 +20,8 @@ const rows = [
 ];
 
 export default function Page() {
+  const companies = (useCompanies().data ?? []).map((x) => x.name);
+  const fields = fieldsFor(companies);
   return (
     <ResourceTable
       pageTitle="Planning Settings"
@@ -30,7 +32,7 @@ export default function Page() {
       rows={rows}
       fields={fields}
       actions={['edit', 'delete']}
-      filters={[{ key: 'company', label: 'Company:', options: COMPANIES, placeholder: 'All companies' }]}
+      filters={[{ key: 'company', label: 'Company:', options: companies, placeholder: 'All companies' }]}
     />
   );
 }

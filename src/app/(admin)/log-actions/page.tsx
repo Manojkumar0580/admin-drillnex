@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Badge, Btn, Tone, useColors } from '@/components/ui';
+import { CompanySelect } from '@/components/SearchSelect';
 import { api, AuditEntry, Company, timeAgo } from '@/lib/adminApi';
 
 const GROUPS: [string, string][] = [
@@ -140,10 +141,7 @@ export default function LogActionsPage() {
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="la-company" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-            <select id="la-company" value={companyId} onChange={(e) => setCompanyId(e.target.value)} className={`${input} min-w-[180px]`} style={c.inputStyle}>
-              <option value="">All companies</option>
-              {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-            </select>
+            <CompanySelect id="la-company" width={200} value={companyId} allLabel="All companies" onChange={setCompanyId} />
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="la-from" className="text-xs font-semibold" style={{ color: c.text }}>From:</label>

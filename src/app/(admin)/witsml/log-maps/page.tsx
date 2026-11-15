@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Badge, Btn, FormRow, Notice, Tone, useColors } from '@/components/ui';
+import { CompanySelect } from '@/components/SearchSelect';
 import { api, ApiError, Company, Connection, LogMapRow, send, timeAgo, WellLite } from '@/lib/adminApi';
 
 const STATUS: Record<LogMapRow['status'], { tone: Tone; label: string }> = {
@@ -150,10 +151,7 @@ export default function LogMapsPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="lmc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <select id="lmc" value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="text-sm px-3 py-2 rounded-lg border outline-none min-w-[190px]" style={c.inputStyle}>
-                <option value="">All companies</option>
-                {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
+              <CompanySelect id="lmc" width={220} value={companyFilter} allLabel="All companies" onChange={(v) => setCompanyFilter(v)} />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="lms" className="text-xs font-semibold" style={{ color: c.text }}>Data State:</label>
@@ -237,10 +235,7 @@ export default function LogMapsPage() {
             {isNew ? (
               <>
                 <FormRow label="Company" htmlFor="lm-company">
-                  <select id="lm-company" value={form.companyId} onChange={(e) => { setForm({ ...form, companyId: e.target.value, connectionId: '', wellId: '' }); setWells(null); setBores(null); setLogs(null); }} className={input} style={c.inputStyle}>
-                    <option value="">Select a company</option>
-                    {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-                  </select>
+                  <CompanySelect id="lm-company" value={form.companyId} onChange={(v) => { setForm({ ...form, companyId: v, connectionId: '', wellId: '' }); setWells(null); setBores(null); setLogs(null); }} />
                 </FormRow>
                 <FormRow label="Source Connection" htmlFor="lm-conn">
                   <select id="lm-conn" value={form.connectionId} onChange={(e) => { setForm({ ...form, connectionId: e.target.value, uidWell: '', uidWellbore: '', uidLog: '' }); setWells(null); setBores(null); setLogs(null); }} className={input} style={c.inputStyle}>

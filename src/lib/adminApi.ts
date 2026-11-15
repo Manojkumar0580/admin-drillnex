@@ -44,7 +44,7 @@ export interface WellLite { id: string; name: string; wellNumber: string; compan
 
 export interface WellFull extends WellLite {
   padId?: string | null;
-  status: 'planning' | 'drilling' | 'completed' | 'suspended' | 'abandoned';
+  status: 'active' | 'paused' | 'completed';
   type: 'vertical' | 'directional' | 'horizontal' | 'lateral';
   field: string; basin: string; country: string; lat: number | null; lng: number | null;
   targetDepth: number; currentDepth: number; spudDate: string | null; operator: string; contractor: string; createdAt?: string;

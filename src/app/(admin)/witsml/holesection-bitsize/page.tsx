@@ -3,7 +3,8 @@
 import { FormEvent, useState } from 'react';
 import Modal from '@/components/Modal';
 import { useAdminStore } from '@/store/useAdminStore';
-import { COMPANIES } from '@/lib/mock';
+import SearchSelect from '@/components/SearchSelect';
+import { useCompanies } from '@/lib/useCompanies';
 
 interface Profile {
   id: string;
@@ -34,6 +35,7 @@ export default function HoleSectionPage() {
   const muted = dark ? '#64748b' : '#94a3b8';
   const inputStyle = { background: dark ? '#0f1f35' : '#f8fafc', borderColor: border, color: text };
 
+  const COMPANY_NAMES = (useCompanies().data ?? []).map((x) => x.name);
   const [profiles, setProfiles] = useState<Profile[]>(SEED);
   const [company, setCompany] = useState('');
   const [region, setRegion] = useState('');
@@ -47,7 +49,7 @@ export default function HoleSectionPage() {
   function open(p: Profile | 'new') {
     setForm(
       p === 'new'
-        ? { id: '', company: company || COMPANIES[0], region: region || REGIONS[0], surface: '', intermediate: '', curve: '', lateral: '' }
+        ? { id: '', company: company || COMPANY_NAMES[0] || '', region: region || REGIONS[0], surface: '', intermediate: '', curve: '', lateral: '' }
         : { ...p }
     );
     setEditing(p);
@@ -75,10 +77,8 @@ export default function HoleSectionPage() {
         <div className="flex gap-4 flex-wrap px-6 py-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: text }}>Company:</label>
-            <select value={company} onChange={(e) => setCompany(e.target.value)} className={select} style={inputStyle}>
-              <option value="">All companies</option>
-              {COMPANIES.map((c) => <option key={c}>{c}</option>)}
-            </select>
+            <SearchSelect width={200} value={company} onChange={setCompany} allLabel="All companies"
+              options={COMPANY_NAMES.map((n) => ({ value: n, label: n }))} emptyText="No companies yet" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: text }}>Region:</label>
@@ -142,10 +142,9 @@ export default function HoleSectionPage() {
             {(['company', 'region'] as const).map((k) => (
               <div key={k} className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-1 sm:gap-3 sm:items-center">
                 <label className="text-sm font-semibold sm:text-right capitalize" style={{ color: text }}>{k}</label>
-                <select value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-                  className="w-full text-sm px-3 py-2 rounded-lg border outline-none" style={inputStyle}>
-                  {(k === 'company' ? COMPANIES : REGIONS).map((o) => <option key={o}>{o}</option>)}
-                </select>
+                <SearchSelect value={form[k]} onChange={(v) => setForm({ ...form, [k]: v })}
+                  options={(k === 'company' ? COMPANY_NAMES : REGIONS).map((o) => ({ value: o, label: o }))}
+                  placeholder={k === 'company' ? 'Select a company' : 'Select a region'} emptyText="Nothing to show" />
               </div>
             ))}
             {SECTIONS.map((s) => (

@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Badge, Btn, FormRow, Notice, Tone, useColors } from '@/components/ui';
+import { CompanySelect } from '@/components/SearchSelect';
 import { api, Company, generatePassword, send, timeAgo, UserRow } from '@/lib/adminApi';
 
 const ROLES = ['manager', 'engineer', 'operator', 'viewer'] as const;
@@ -136,10 +137,7 @@ export default function UsersPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="uc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <select id="uc" value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)} className="text-sm px-3 py-2 rounded-lg border outline-none min-w-[190px]" style={c.inputStyle}>
-                <option value="">All companies</option>
-                {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
+              <CompanySelect id="uc" width={220} value={companyFilter} allLabel="All companies" onChange={(v) => setCompanyFilter(v)} />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="ur" className="text-xs font-semibold" style={{ color: c.text }}>Role:</label>
@@ -209,10 +207,7 @@ export default function UsersPage() {
         >
           <form id="user-form" onSubmit={onSubmit} className="space-y-3">
             <FormRow label="Company" htmlFor="u-company">
-              <select id="u-company" value={form.companyId} disabled={editing !== 'new'} onChange={(e) => setForm({ ...form, companyId: e.target.value })} className={input} style={{ ...c.inputStyle, opacity: editing !== 'new' ? 0.7 : 1 }}>
-                <option value="">Select a company</option>
-                {(companies.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
+              <CompanySelect id="u-company" value={form.companyId} disabled={editing !== 'new'} onChange={(v) => setForm({ ...form, companyId: v })} />
             </FormRow>
             <FormRow label="Name" htmlFor="u-name">
               <input id="u-name" required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={input} style={c.inputStyle} placeholder="Full name" />

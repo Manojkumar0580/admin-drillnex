@@ -129,19 +129,19 @@ export default function ChannelsPage() {
       <div className="rounded-xl border" style={{ background: c.cardBg, borderColor: c.border }}>
         <div className="px-6 py-4 border-b flex items-center justify-between gap-3 flex-wrap" style={{ borderColor: c.border }}>
           <div>
-            <h2 className="text-base font-medium" style={{ color: c.text }}>Custom aliases</h2>
-            <p className="text-xs mt-0.5" style={{ color: c.muted }}>Names you have added. They apply to every customer, to CSV imports and to live WITSML feeds.</p>
+            <h2 className="text-base font-medium" style={{ color: c.text }}>Custom channels</h2>
+            <p className="text-xs mt-0.5" style={{ color: c.muted }}>Channel names you have added. Use New Channel when a customer's data uses a name RigPulse does not know. They apply to every customer, to CSV imports and to live WITSML feeds.</p>
           </div>
           <div className="flex items-center gap-3">
             <input aria-label="Search channels" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 200 }} />
-            <Btn onClick={() => open('new')}>New</Btn>
+            <Btn kind="success" onClick={() => open('new')}>+ New Channel</Btn>
           </div>
         </div>
         <div className="overflow-x-auto px-6 pb-4">
           <table className="w-full text-sm" style={{ color: c.text }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${c.border}` }}>
-                {['Mnemonic', 'Channel', 'Assumed unit', 'Added', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
+                {['Channel Name', 'Channel', 'Assumed unit', 'Added', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -163,7 +163,7 @@ export default function ChannelsPage() {
               {dict.isError && <tr><td colSpan={5} className="py-6 text-center text-red-400">{(dict.error as Error).message}</td></tr>}
               {dict.data && customRows.length === 0 && (
                 <tr><td colSpan={5} className="py-6 text-center" style={{ color: c.muted }}>
-                  {(dict.data.custom.length === 0) ? 'No custom aliases yet. Add one when a customer\'s data uses a name RigPulse does not know.' : 'No alias matches the search.'}
+                  {(dict.data.custom.length === 0) ? 'No custom channels yet. Click New Channel to add one.' : 'No alias matches the search.'}
                 </td></tr>
               )}
             </tbody>
@@ -218,7 +218,7 @@ export default function ChannelsPage() {
 
       {editing && (
         <Modal
-          title={editing === 'new' ? 'New Alias' : 'Edit Alias'}
+          title={editing === 'new' ? 'New Channel' : 'Edit Channel'}
           onClose={() => setEditing(null)}
           footer={
             <>
@@ -228,7 +228,7 @@ export default function ChannelsPage() {
           }
         >
           <form id="alias-form" onSubmit={onSubmit} className="space-y-3">
-            <FormRow label="Mnemonic" htmlFor="al-m" hint={editing === 'new' ? 'As it appears in the data. Capitals, spaces, - and _ are ignored when matching.' : 'To change the name, delete this alias and add a new one.'}>
+            <FormRow label="Channel Name" htmlFor="al-m" hint={editing === 'new' ? 'As it appears in the data. Capitals, spaces, - and _ are ignored when matching.' : 'To change the name, delete this alias and add a new one.'}>
               <input id="al-m" required minLength={2} disabled={editing !== 'new'} value={form.mnemonic} onChange={(e) => setForm({ ...form, mnemonic: e.target.value })} placeholder="e.g. XYZ_PRESS" className={input} style={{ ...c.inputStyle, opacity: editing !== 'new' ? 0.7 : 1 }} />
             </FormRow>
             <FormRow label="Means" htmlFor="al-c">
