@@ -52,6 +52,7 @@ const NAV = [
       { label: 'Logs', href: '/witsml/logs' },
       { label: 'Log Maps', href: '/witsml/log-maps' },
       { label: 'Pads', href: '/witsml/pads' },
+      { label: 'Depth Data', href: '/witsml/depth-data' },
       { label: 'HoleSection-BitSize mapping', href: '/witsml/holesection-bitsize' },
     ],
   },

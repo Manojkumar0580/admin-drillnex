@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Btn, FormRow, Notice, useColors } from '@/components/ui';
 import { CompanySelect } from '@/components/SearchSelect';
+import WellFilters, { matchesWellFilter, NO_WELL_FILTER, useAllWells, WellFilterState } from '@/components/WellFilters';
 import { api, RigRow, send } from '@/lib/adminApi';
 import { useCompanies } from '@/lib/useCompanies';
 
@@ -12,6 +13,7 @@ export default function RigsPage() {
   const c = useColors();
   const qc = useQueryClient();
   const [companyFilter, setCompanyFilter] = useState('');
+  const [wellFilter, setWellFilter] = useState<WellFilterState>(NO_WELL_FILTER);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<RigRow | 'new' | null>(null);
   const [form, setForm] = useState({ companyId: '', name: '' });
@@ -22,15 +24,18 @@ export default function RigsPage() {
   const companies = useCompanies();
   const rigs = useQuery({ queryKey: ['rigs'], queryFn: () => api<{ data: RigRow[] }>('rigs').then((r) => r.data) });
 
+  const allWells = useAllWells();
+  const wellById = useMemo(() => new Map((allWells.data ?? []).map((w) => [w.id, w])), [allWells.data]);
   const companyName = useMemo(() => new Map((companies.data ?? []).map((x) => [x.id, x.name])), [companies.data]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (rigs.data ?? []).filter((r) =>
       (!companyFilter || r.companyId === companyFilter) &&
+      matchesWellFilter([r.currentWellId], wellById, wellFilter) &&
       (!q || r.name.toLowerCase().includes(q) || (companyName.get(r.companyId) ?? '').toLowerCase().includes(q))
     );
-  }, [rigs.data, companyFilter, query, companyName]);
+  }, [rigs.data, companyFilter, wellFilter, wellById, query, companyName]);
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ['rigs'] });
@@ -83,8 +88,9 @@ export default function RigsPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="rc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <CompanySelect id="rc" width={220} value={companyFilter} onChange={setCompanyFilter} allLabel="All companies" />
+              <CompanySelect id="rc" width={220} value={companyFilter} onChange={(v) => { setCompanyFilter(v); setWellFilter((f) => ({ ...f, wellId: '' })); }} allLabel="All companies" />
             </div>
+            <WellFilters idPrefix="rw" companyId={companyFilter} value={wellFilter} onChange={setWellFilter} />
             <input aria-label="Search rigs" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 200 }} />
           </div>
           <Btn onClick={() => open('new')}>New</Btn>

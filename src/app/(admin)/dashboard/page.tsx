@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
 
   const o = overview.data;
   const cards = [
-    { label: 'Wells', value: fmtNum(o?.wells.total), sub: o ? `${o.wells.drilling} drilling` : '', href: '/witsml/wells', bg: '#0891b2', shadow: '#0e7490' },
+    { label: 'Wells', value: fmtNum(o?.wells.total), sub: o ? `${o.wells.drilling} active` : '', href: '/witsml/wells', bg: '#0891b2', shadow: '#0e7490' },
     { label: 'Rigs', value: fmtNum(o?.rigs.total), sub: o ? `${o.rigs.active} active` : '', href: '/witsml/rigs', bg: '#16a34a', shadow: '#15803d' },
     { label: 'Log feeds', value: fmtNum(o?.logMaps.total), sub: o ? `${o.logMaps.on} on · ${o.logMaps.live} live` : '', href: '/witsml/log-maps', bg: '#d97706', shadow: '#b45309' },
     { label: 'Users', value: fmtNum(o?.users.total), sub: o ? `${o.users.active} active` : '', href: '/users', bg: '#dc2626', shadow: '#b91c1c' },

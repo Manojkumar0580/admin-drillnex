@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Btn, FormRow, Notice, useColors } from '@/components/ui';
 import { CompanySelect } from '@/components/SearchSelect';
+import WellFilters, { matchesWellFilter, NO_WELL_FILTER, useAllWells, WellFilterState } from '@/components/WellFilters';
 import { api, PadRow, send, WellFull } from '@/lib/adminApi';
 import { useCompanies } from '@/lib/useCompanies';
 
@@ -16,6 +17,7 @@ export default function PadsPage() {
   const c = useColors();
   const qc = useQueryClient();
   const [companyFilter, setCompanyFilter] = useState('');
+  const [wellFilter, setWellFilter] = useState<WellFilterState>(NO_WELL_FILTER);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<PadRow | 'new' | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -36,13 +38,16 @@ export default function PadsPage() {
     return m;
   }, [pads.data]);
 
+  const wellById = useMemo(() => new Map((wells.data ?? []).map((w) => [w.id, w])), [wells.data]);
+
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (pads.data ?? []).filter((p) =>
       (!companyFilter || p.companyId === companyFilter) &&
+      matchesWellFilter(p.wells.map((w) => w.id), wellById, wellFilter) &&
       (!q || [p.name, p.notes, companyName.get(p.companyId) ?? '', ...p.wells.map((w) => w.name)].some((v) => v.toLowerCase().includes(q)))
     );
-  }, [pads.data, companyFilter, query, companyName]);
+  }, [pads.data, companyFilter, wellFilter, wellById, query, companyName]);
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ['pads'] });
@@ -105,8 +110,9 @@ export default function PadsPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="pc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <CompanySelect id="pc" width={220} value={companyFilter} onChange={setCompanyFilter} allLabel="All companies" />
+              <CompanySelect id="pc" width={220} value={companyFilter} onChange={(v) => { setCompanyFilter(v); setWellFilter((f) => ({ ...f, wellId: '' })); }} allLabel="All companies" />
             </div>
+            <WellFilters idPrefix="pw" companyId={companyFilter} value={wellFilter} onChange={setWellFilter} />
             <input aria-label="Search pads" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 220 }} />
           </div>
           <Btn kind="success" onClick={() => open('new')}>New</Btn>

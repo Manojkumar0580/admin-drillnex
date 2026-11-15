@@ -14,13 +14,13 @@ const STATUS_TONE: Record<(typeof STATUSES)[number], Tone> = { active: 'green', 
 const STATUS_LABEL: Record<(typeof STATUSES)[number], string> = { active: 'Active', paused: 'Paused', completed: 'Completed' };
 
 interface FormState {
-  companyId: string; rigId: string; name: string; wellNumber: string; operator: string; contractor: string;
+  companyId: string; rigId: string; padId: string; name: string; wellNumber: string; operator: string; contractor: string;
   status: (typeof STATUSES)[number]; type: (typeof TYPES)[number];
   field: string; basin: string; country: string; lat: string; lng: string;
   targetDepth: string; currentDepth: string; spudDate: string;
 }
 const EMPTY: FormState = {
-  companyId: '', rigId: '', name: '', wellNumber: '', operator: '', contractor: '', status: 'active', type: 'vertical',
+  companyId: '', rigId: '', padId: '', name: '', wellNumber: '', operator: '', contractor: '', status: 'active', type: 'vertical',
   field: '', basin: '', country: '', lat: '', lng: '', targetDepth: '', currentDepth: '', spudDate: '',
 };
 
@@ -60,6 +60,7 @@ export default function WellsPage() {
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ['wells'] });
     qc.invalidateQueries({ queryKey: ['rigs'] });
+    qc.invalidateQueries({ queryKey: ['pads'] }); // pad well counts
     qc.invalidateQueries({ queryKey: ['companies'] }); // well counts
   };
 
@@ -80,6 +81,9 @@ export default function WellsPage() {
         status: form.status, type: form.type, field: form.field, basin: form.basin, country: form.country,
         targetDepth: num(form.targetDepth),
       };
+      // A pad is chosen right here, so a new well does not need a second trip to the Pads page.
+      if (editing === 'new') { if (form.padId) body.padId = form.padId; }
+      else body.padId = form.padId || null; // on edit, empty means "no pad"
       const cur = num(form.currentDepth);
       if (cur !== undefined) body.currentDepth = cur;
       if (editing === 'new') {
@@ -116,7 +120,7 @@ export default function WellsPage() {
     setForm(target === 'new'
       ? { ...EMPTY, companyId: companyFilter }
       : {
-          companyId: target.companyId, rigId: rigOfWell.get(target.id)?.id ?? '', name: target.name, wellNumber: target.wellNumber, operator: target.operator, contractor: target.contractor,
+          companyId: target.companyId, rigId: rigOfWell.get(target.id)?.id ?? '', padId: target.padId ?? '', name: target.name, wellNumber: target.wellNumber, operator: target.operator, contractor: target.contractor,
           status: target.status, type: target.type, field: target.field, basin: target.basin, country: target.country,
           lat: target.lat === null ? '' : String(target.lat), lng: target.lng === null ? '' : String(target.lng),
           targetDepth: String(target.targetDepth), currentDepth: String(target.currentDepth),
@@ -134,6 +138,7 @@ export default function WellsPage() {
 
   const input = 'w-full text-sm px-3 py-2 rounded-lg border outline-none';
   const rigChoices = (rigs.data ?? []).filter((r) => r.companyId === form.companyId);
+  const padChoices = (pads.data ?? []).filter((p) => p.companyId === form.companyId);
   const myWellId = editing && editing !== 'new' ? editing.id : '';
   const Text = ({ k, label, req, ph, type = 'text', step }: { k: keyof FormState; label: string; req?: boolean; ph?: string; type?: string; step?: string }) => (
     <FormRow label={label} htmlFor={`w-${k}`}>
@@ -221,7 +226,7 @@ export default function WellsPage() {
           <form id="well-form" onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
             <div className="space-y-3">
               <FormRow label="Company" htmlFor="w-company">
-                <CompanySelect id="w-company" value={form.companyId} disabled={editing !== 'new'} onChange={(v) => setForm({ ...form, companyId: v, rigId: '' })} />
+                <CompanySelect id="w-company" value={form.companyId} disabled={editing !== 'new'} onChange={(v) => setForm({ ...form, companyId: v, rigId: '', padId: '' })} />
               </FormRow>
               <FormRow label="Rig" htmlFor="w-rig" hint="A rig can be on one well at a time.">
                 <SearchSelect id="w-rig" value={form.rigId} onChange={(v) => setForm({ ...form, rigId: v })} disabled={!form.companyId}
@@ -231,6 +236,12 @@ export default function WellsPage() {
                     const other = r.currentWellId && r.currentWellId !== myWellId;
                     return { value: r.id, label: r.name, disabled: !!other, hint: other ? `on ${r.currentWell?.name ?? 'another well'}` : undefined };
                   })} />
+              </FormRow>
+              <FormRow label="Pad" htmlFor="w-pad" hint="Optional. Wells drilled from the same location share a pad.">
+                <SearchSelect id="w-pad" value={form.padId} onChange={(v) => setForm({ ...form, padId: v })} disabled={!form.companyId}
+                  allLabel="No pad" placeholder={form.companyId ? 'Select a pad' : 'Select a company first'}
+                  emptyText="No pads for this company yet. Add one under WITSML Settings, Pads."
+                  options={padChoices.map((p) => ({ value: p.id, label: p.name, hint: p.wellCount ? `${p.wellCount} well${p.wellCount > 1 ? 's' : ''}` : undefined }))} />
               </FormRow>
               {Text({ k: 'name', label: 'Name', req: true })}
               {Text({ k: 'wellNumber', label: 'Well Number', req: true, ph: 'Unique within the company' })}

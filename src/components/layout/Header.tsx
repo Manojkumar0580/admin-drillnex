@@ -29,6 +29,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/witsml/logs': 'Logs',
   '/witsml/log-maps': 'Log Maps',
   '/witsml/pads': 'Pads',
+  '/witsml/depth-data': 'Depth Data',
   '/witsml/holesection-bitsize': 'HoleSection-BitSize mapping',
 };
 

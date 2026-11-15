@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Modal from '@/components/Modal';
 import { Badge, Btn, FormRow, Notice, Tone, useColors } from '@/components/ui';
 import { CompanySelect } from '@/components/SearchSelect';
+import WellFilters, { matchesWellFilter, NO_WELL_FILTER, useAllWells, WellFilterState } from '@/components/WellFilters';
 import { api, ApiError, Company, Connection, LogMapRow, send, timeAgo, WellLite } from '@/lib/adminApi';
 
 const STATUS: Record<LogMapRow['status'], { tone: Tone; label: string }> = {
@@ -29,6 +30,7 @@ export default function LogMapsPage() {
   const qc = useQueryClient();
   const [companyFilter, setCompanyFilter] = useState('');
   const [stateFilter, setStateFilter] = useState('');
+  const [wellFilter, setWellFilter] = useState<WellFilterState>(NO_WELL_FILTER);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<LogMapRow | 'new' | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -60,6 +62,8 @@ export default function LogMapsPage() {
   });
 
   const connName = useMemo(() => new Map((conns.data ?? []).map((x) => [x.id, x.name])), [conns.data]);
+  const allWells = useAllWells();
+  const wellById = useMemo(() => new Map((allWells.data ?? []).map((w) => [w.id, w])), [allWells.data]);
   const wellName = useMemo(() => new Map((wellList.data ?? []).map((x) => [x.id, x.name])), [wellList.data]);
 
   const rows = useMemo(() => {
@@ -67,9 +71,10 @@ export default function LogMapsPage() {
     return (maps.data ?? []).filter((r) =>
       (!companyFilter || r.companyId === companyFilter) &&
       (!stateFilter || r.dataState === stateFilter) &&
+      matchesWellFilter([r.wellId], wellById, wellFilter) &&
       (!q || [r.uidLog, r.uidWell, r.uidWellbore, wellName.get(r.wellId) ?? '', connName.get(r.connectionId) ?? ''].some((v) => v.toLowerCase().includes(q)))
     );
-  }, [maps.data, companyFilter, stateFilter, query, wellName, connName]);
+  }, [maps.data, companyFilter, stateFilter, wellFilter, wellById, query, wellName, connName]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ['logmaps'] });
 
@@ -151,8 +156,9 @@ export default function LogMapsPage() {
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
               <label htmlFor="lmc" className="text-xs font-semibold" style={{ color: c.text }}>Company:</label>
-              <CompanySelect id="lmc" width={220} value={companyFilter} allLabel="All companies" onChange={(v) => setCompanyFilter(v)} />
+              <CompanySelect id="lmc" width={220} value={companyFilter} allLabel="All companies" onChange={(v) => { setCompanyFilter(v); setWellFilter((f) => ({ ...f, wellId: '' })); }} />
             </div>
+            <WellFilters idPrefix="lw" companyId={companyFilter} value={wellFilter} onChange={setWellFilter} />
             <div className="flex flex-col gap-1">
               <label htmlFor="lms" className="text-xs font-semibold" style={{ color: c.text }}>Data State:</label>
               <select id="lms" value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} className="text-sm px-3 py-2 rounded-lg border outline-none" style={c.inputStyle}>
