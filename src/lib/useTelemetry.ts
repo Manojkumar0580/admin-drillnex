@@ -20,8 +20,10 @@ export type ConnState = 'connecting' | 'connected' | 'error';
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = new URL(API).origin;
 
-const MAX_POINTS = 120;
-const RENDER_EVERY_MS = 400; // data can arrive at 100x speed; never re-render per message
+const MAX_POINTS = 300;        // ~5 min at 1 Hz — enough to fill the LogView
+const RENDER_EVERY_MS = 400;   // data can arrive at 100x speed; never re-render per message
+const MAX_RECONNECTS  = 8;
+const RECONNECT_BASE_MS = 1500;
 
 /**
  * Subscribes to live telemetry for a room. Keeps a ring buffer in a ref and publishes it to React
@@ -45,24 +47,42 @@ export function useTelemetry(room: string) {
     let socket: Socket | null = null;
     let cancelled = false;
     let refresh: ReturnType<typeof setTimeout> | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let reconnectAttempts = 0;
 
     async function connect() {
       try {
-        // Short-lived socket token, because the session cookie is httpOnly and unreadable here.
         const res = await fetch('/api/backend/auth/socket-token', { method: 'POST', cache: 'no-store' });
         const data = await res.json();
         if (!res.ok || !data.token) throw new Error(data.message || 'Could not get a socket token');
         if (cancelled) return;
 
+        reconnectAttempts = 0; // fresh token = reset counter
         socket = io(SOCKET_URL, { auth: { token: data.token }, reconnection: false });
+
         socket.on('connect', () => {
+          reconnectAttempts = 0;
           socket!.emit('join-well', room, (r: { ok: boolean; error?: string }) => {
             if (r?.ok) { setConn('connected'); setError(''); }
             else { setConn('error'); setError(r?.error || 'Could not join the room'); }
           });
         });
+
         socket.on('connect_error', (e) => { setConn('error'); setError(e.message); });
-        socket.on('disconnect', () => setConn('connecting'));
+
+        socket.on('disconnect', (reason) => {
+          setConn('connecting');
+          // Don't retry on explicit server-side kicks or cancelled rooms
+          if (cancelled || reason === 'io server disconnect') return;
+          if (reconnectAttempts >= MAX_RECONNECTS) { setConn('error'); setError('Connection lost'); return; }
+          // Exponential backoff: 1.5s, 3s, 6s, … capped at 30s
+          const delay = Math.min(RECONNECT_BASE_MS * Math.pow(2, reconnectAttempts), 30_000);
+          reconnectAttempts += 1;
+          reconnectTimer = setTimeout(() => {
+            if (!cancelled) { socket?.disconnect(); connect(); }
+          }, delay);
+        });
+
         const accept = (m: TelemetryMessage) => {
           if (m.wellId !== room) return;
           lastMsgAt.current = Date.now();
@@ -70,10 +90,10 @@ export function useTelemetry(room: string) {
           if (buffer.current.length > MAX_POINTS) buffer.current.splice(0, buffer.current.length - MAX_POINTS);
           dirty.current = true;
         };
-        socket.on('telemetry', accept); // replay / single points
-        socket.on('telemetry-batch', (batch: TelemetryMessage[]) => { if (Array.isArray(batch)) batch.forEach(accept); }); // live feeds
+        socket.on('telemetry', accept);
+        socket.on('telemetry-batch', (batch: TelemetryMessage[]) => { if (Array.isArray(batch)) batch.forEach(accept); });
 
-        // The token lives 5 minutes; reconnect with a fresh one just before it expires.
+        // Token lives 5 min; reconnect with a fresh one before it expires
         refresh = setTimeout(() => {
           socket?.disconnect();
           if (!cancelled) connect();
@@ -95,6 +115,7 @@ export function useTelemetry(room: string) {
       cancelled = true;
       clearInterval(timer);
       if (refresh) clearTimeout(refresh);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       socket?.emit('leave-well', room);
       socket?.disconnect();
     };

@@ -127,9 +127,12 @@ const HEADER_H = 90;
 
 interface HoverSnap { svgY: number; pt: TelemetryMessage; clientX: number; clientY: number }
 
+const CHART_WINDOW = 60; // samples shown in mini chart
+
 function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState<HoverSnap | null>(null);
+  const [hover, setHover]   = useState<HoverSnap | null>(null);
+  const rafRef  = useRef<number | null>(null);
 
   const headerBg = '#0d1b2e';
   const bodyBg0  = dark ? '#060f1a' : '#f1f5f9';
@@ -154,12 +157,12 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
     );
   }
 
-  const tMin   = new Date(points[0].t).getTime();
-  const tMax   = new Date(points[points.length - 1].t).getTime();
-  const tRange = tMax - tMin || 1;
+  const tMin   = typeof points[0].t === 'number' ? points[0].t : new Date(points[0].t).getTime();
+  const tMax   = typeof points[points.length - 1].t === 'number' ? points[points.length - 1].t : new Date(points[points.length - 1].t).getTime();
+  const tRange = Math.max(1, tMax - tMin);
 
-  // Height: 4px per point, min 500
-  const totalH = Math.max(500, points.length * 4);
+  // Height: 6px per point for readability, min 500
+  const totalH = Math.max(500, points.length * 6);
   const totalW = LOG_PARAMS.length * TRACK_W + TIME_W;
 
   const yOf = (t: string | number) => {
@@ -199,32 +202,42 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
 
   const last = points[points.length - 1];
 
-  // ── Mouse handlers for crosshair ──────────────────────────────────────────
+  // ── Mouse handlers for crosshair (RAF-throttled) ─────────────────────────
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect    = el.getBoundingClientRect();
-    const scrollY = el.scrollTop;
-    // y inside the SVG (0 = top of SVG including header)
-    const rawY  = (e.clientY - rect.top) + scrollY;
-    const bodyY = rawY - HEADER_H; // y inside the track bodies area
+    if (rafRef.current !== null) return; // already scheduled this frame
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const el = containerRef.current;
+      if (!el) return;
+      const rect  = el.getBoundingClientRect();
+      const bodyY = (clientY - rect.top) + el.scrollTop - HEADER_H;
 
-    // Find the nearest point by body-Y distance
-    let bestPt   = points[0];
-    let bestDist = Infinity;
-    for (const pt of points) {
-      const ptY = yOf(pt.t);
-      const d   = Math.abs(ptY - bodyY);
-      if (d < bestDist) { bestDist = d; bestPt = pt; }
-    }
-    setHover({ svgY: yOf(bestPt.t), pt: bestPt, clientX: e.clientX, clientY: e.clientY });
+      // Binary search: points are sorted ascending by t → ascending y
+      let lo = 0, hi = points.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (yOf(points[mid].t) < bodyY) lo = mid + 1; else hi = mid;
+      }
+      // Check lo and lo-1 for nearest
+      const bestPt = (lo > 0 && Math.abs(yOf(points[lo - 1].t) - bodyY) < Math.abs(yOf(points[lo].t) - bodyY))
+        ? points[lo - 1] : points[lo];
+
+      setHover({ svgY: yOf(bestPt.t), pt: bestPt, clientX, clientY });
+    });
+  };
+
+  const handleMouseLeaveLog = () => {
+    if (rafRef.current !== null) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    setHover(null);
   };
 
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      onMouseLeave={() => setHover(null)}
+      onMouseLeave={handleMouseLeaveLog}
       style={{ position: 'relative', overflowY: 'auto', overflowX: 'auto', maxHeight: 580, background: bodyBg1, borderTop: `1px solid ${divClr}` }}
     >
       <svg width={totalW} height={HEADER_H + totalH} style={{ display: 'block', fontFamily: 'ui-monospace, monospace' }}>
@@ -333,7 +346,6 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
               stroke={p.color}
               strokeWidth={1.5}
               strokeLinejoin='round'
-              transform={`translate(${i * TRACK_W}, 0)`}
               clipPath={`url(#lv-clip-${p.key})`}
               style={{ transform: `translateX(${i * TRACK_W}px)` }}
             />
@@ -385,9 +397,13 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
 
       {/* Floating tooltip — fixed to viewport so it escapes the scroll container */}
       {hover && (() => {
-        const vals = hover.pt.values as Record<string, number>;
-        const tooltipX = hover.clientX + 18;
-        const tooltipY = hover.clientY - 10;
+        const vals     = hover.pt.values as Record<string, number>;
+        const TIP_W    = 196;
+        const TIP_H    = 190; // approx height for 7 params
+        const rawLeft  = hover.clientX + 18;
+        const rawTop   = hover.clientY - 10;
+        const tooltipX = rawLeft + TIP_W  > (typeof window !== 'undefined' ? window.innerWidth  : 9999) ? hover.clientX - TIP_W - 8 : rawLeft;
+        const tooltipY = rawTop  < 0 ? hover.clientY + 8 : rawTop + TIP_H > (typeof window !== 'undefined' ? window.innerHeight : 9999) ? hover.clientY - TIP_H : rawTop;
         return (
           <div style={{
             position: 'fixed',
@@ -552,7 +568,7 @@ function WellFeed({ wellId, wellName, dark }: { wellId: string; wellName: string
     : { text: 'WAITING', color: '#94a3b8' };
 
   const chartData = useMemo(
-    () => points.map((p) => ({
+    () => points.slice(-CHART_WINDOW).map((p) => ({
       t: new Date(p.t).toLocaleTimeString('en-US', { hour12: false }),
       v: (p.values as Record<string, number>)[active],
     })),
