@@ -12,10 +12,12 @@ async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[]
     return NextResponse.json({ success: false, message: 'Bad path' }, { status: 400 });
   }
 
-  // Defence in depth on top of the SameSite=Strict cookie: state-changing calls must come from this site.
+  // Defence in depth on top of the SameSite=Strict cookie: state-changing calls must carry the
+  // correct Origin header. Missing Origin is also refused — it means the request came from outside
+  // a browser context (curl, server-side) where the cookie cannot be legitimately present.
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     const origin = req.headers.get('origin');
-    if (origin && origin !== req.nextUrl.origin) {
+    if (!origin || origin !== req.nextUrl.origin) {
       return NextResponse.json({ success: false, message: 'Cross-origin request refused' }, { status: 403 });
     }
   }
@@ -32,8 +34,8 @@ async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[]
       headers: {
         Authorization: `Bearer ${token}`,
         ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
-        // Let the API's audit log record the real browser, not just this proxy.
-        ...(req.headers.get('x-forwarded-for') ? { 'X-Forwarded-For': req.headers.get('x-forwarded-for')! } : {}),
+        // Forward User-Agent for audit context; do NOT forward X-Forwarded-For — it is
+        // browser-controlled and would let any client fake their IP in audit logs.
         ...(req.headers.get('user-agent') ? { 'User-Agent': req.headers.get('user-agent')! } : {}),
       },
       body: hasBody ? await req.text() : undefined,

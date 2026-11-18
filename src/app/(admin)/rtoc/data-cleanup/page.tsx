@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useAdminStore } from '@/store/useAdminStore';
+import WellLogXlsxViewer from '@/components/WellLogXlsxViewer';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -169,6 +170,9 @@ export default function DataCleanupPage() {
   const text      = isDark ? '#f1f5f9' : '#0f172a';
   const muted     = isDark ? '#94a3b8' : '#64748b';
   const inputBg   = isDark ? '#0f172a' : '#f8fafc';
+
+  // ── Section tab ───────────────────────────────────────────────────────────────
+  const [activeSection, setActiveSection] = useState<'live' | 'xlsx'>('live');
 
   // ── Selectors ────────────────────────────────────────────────────────────────
   const [companies,     setCompanies]     = useState<CompanyRow[]>([]);
@@ -455,12 +459,55 @@ export default function DataCleanupPage() {
   return (
     <div style={{ padding: 24, background: bg, minHeight: '100vh', color: text }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Data Cleanup</h1>
         <p style={{ fontSize: 13, color: muted, marginTop: 4 }}>
           Visualize, edit, fill gaps, export and re-import well telemetry data.
         </p>
       </div>
+
+      {/* ── Section tabs ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: `2px solid ${border}`, paddingBottom: 0 }}>
+        {([
+          { key: 'live',  label: 'Live Well Data',   icon: '📡' },
+          { key: 'xlsx',  label: 'XLSX Log Viewer',  icon: '📊' },
+        ] as const).map(({ key, label, icon }) => {
+          const active = activeSection === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveSection(key)}
+              style={{
+                padding: '9px 20px',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                border: 'none',
+                borderBottom: active ? '2px solid #1a8cff' : '2px solid transparent',
+                marginBottom: -2,
+                background: 'transparent',
+                color: active ? '#1a8cff' : muted,
+                transition: 'color 0.15s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>{icon}</span>
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── XLSX Log Viewer section ───────────────────────────────────────────── */}
+      {activeSection === 'xlsx' && (
+        <WellLogXlsxViewer />
+      )}
+
+      {/* ── Live data section ─────────────────────────────────────────────────── */}
+      {activeSection === 'live' && (
+      <>
 
       {/* ── Selectors ─────────────────────────────────────────────────────────── */}
       <div style={{ ...cardStyle, marginBottom: 20 }}>
@@ -906,6 +953,9 @@ export default function DataCleanupPage() {
             </div>
           </div>
         </div>
+      )}
+
+      </>
       )}
     </div>
   );

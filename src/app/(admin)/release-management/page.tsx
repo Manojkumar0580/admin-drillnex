@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge, Btn, FormRow, Notice, useColors } from '@/components/ui';
 import { api, ApiError, ChannelInfo, Company, ImportPreview, send, WellFull } from '@/lib/adminApi';
 
-const MAX_FILE_BYTES = 9 * 1024 * 1024; // the API accepts about 9.5 MB of CSV text per import
+const MAX_FILE_BYTES = 2 * 1024 * 1024; // the API accepts up to 2 MB of CSV text per import
 
 const fmtUtc = (ms: number | null | undefined) => (ms ? new Date(ms).toISOString().replace('T', ' ').slice(0, 19) + ' UTC' : '—');
 const toInput = (ms: number) => new Date(ms).toISOString().slice(0, 16); // value for <input type="datetime-local">, read as UTC

@@ -34,6 +34,7 @@ const NAV = [
       { label: 'Health Check', href: '/rtoc/health' },
       { label: 'Automated Report', href: '/rtoc/auto-report' },
       { label: 'Frac Data Cleanup', href: '/rtoc/frac-cleanup' },
+      { label: 'Mud Log Cleanup', href: '/rtoc/mud-log-cleanup' },
       { label: 'ProINSIGHT Inj Wells', href: '/rtoc/proinsight' },
     ],
   },

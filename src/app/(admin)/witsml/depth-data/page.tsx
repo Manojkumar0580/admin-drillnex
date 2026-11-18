@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Notice, useColors } from '@/components/ui';
@@ -25,8 +26,9 @@ const MAX_RANGE_FT = 30000; // the API limit per request
  */
 export default function DepthDataPage() {
   const c = useColors();
+  const searchParams = useSearchParams();
   const [companyId, setCompanyId] = useState('');
-  const [wellId, setWellId] = useState('');
+  const [wellId, setWellId] = useState(searchParams.get('wellId') ?? '');
   const [from, setFrom] = useState('0');
   const [to, setTo] = useState('30000');
   const [channels, setChannels] = useState<string[]>(DEFAULT_CHANNELS);
