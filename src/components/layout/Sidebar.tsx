@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -106,6 +106,8 @@ const NAV = [
       { label: 'Users', href: '/users' },
       { label: 'Log Actions', href: '/log-actions' },
       { label: 'Releases Management', href: '/release-management' },
+      { label: 'Bulk Historical Import', href: '/bulk-import' },
+      { label: 'Security (2FA)', href: '/security' },
     ]
   },
   {
@@ -139,13 +141,13 @@ export default function Sidebar() {
       className="flex flex-col h-full transition-all duration-300 relative"
       style={{
         width: sidebarCollapsed ? '64px' : '230px',
-        background: dark ? '#0d1b2e' : '#1e293b',
-        borderRight: dark ? '1px solid #1e3a5f' : '1px solid #2d4a6a',
+        background: dark ? '#0b0b10' : '#1e293b',
+        borderRight: dark ? '1px solid #1a1a24' : '1px solid #2d4a6a',
         flexShrink: 0,
       }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b" style={{ borderColor: dark ? '#1e3a5f' : '#2d4a6a' }}>
+      <div className="flex items-center gap-3 px-4 py-5 border-b" style={{ borderColor: dark ? '#242424' : '#2d4a6a' }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#1d6fbf' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
@@ -153,7 +155,7 @@ export default function Sidebar() {
         </div>
         {!sidebarCollapsed && (
           <div>
-            <span className="text-sm font-bold text-white">RigPulse</span>
+            <span className="text-sm font-bold text-white">DrillNex</span>
             <span className="block text-xs" style={{ color: '#64b5f6' }}>Admin Panel</span>
           </div>
         )}
@@ -161,7 +163,7 @@ export default function Sidebar() {
 
       {/* User */}
       {!sidebarCollapsed && (
-        <div className="px-4 py-4 border-b" style={{ borderColor: dark ? '#1e3a5f' : '#2d4a6a' }}>
+        <div className="px-4 py-4 border-b" style={{ borderColor: dark ? '#242424' : '#2d4a6a' }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: '#1d6fbf', color: 'white' }}>
@@ -193,13 +195,14 @@ export default function Sidebar() {
                 className="flex items-center gap-3 px-4 py-2.5 text-sm transition-all mx-2 rounded-lg my-0.5"
                 style={{
                   color: isActive ? 'white' : '#94a3b8',
-                  background: isActive ? '#1d6fbf' : 'transparent',
+                  background: isActive ? '#1d6fbf22' : 'transparent',
+                  borderLeft: isActive ? '2px solid #1d6fbf' : '2px solid transparent',
                 }}
-                onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#1e3a5f'; }}
+                onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#ffffff0a'; }}
                 onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
                 <span className="flex-shrink-0" style={{ color: isActive ? 'white' : '#64b5f6' }}>{item.icon}</span>
-                {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
+                {!sidebarCollapsed && <span className="font-semibold uppercase tracking-widest text-xs">{item.label}</span>}
               </Link>
             );
           }
@@ -214,13 +217,13 @@ export default function Sidebar() {
                   background: 'transparent',
                   width: sidebarCollapsed ? 'calc(100% - 16px)' : 'calc(100% - 16px)',
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#1e3a5f'; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#ffffff0a'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
                 <span className="flex-shrink-0" style={{ color: '#64b5f6' }}>{item.icon}</span>
                 {!sidebarCollapsed && (
                   <>
-                    <span className="font-medium flex-1 text-left">{item.label}</span>
+                    <span className="font-semibold uppercase tracking-widest text-xs flex-1 text-left">{item.label}</span>
                     <svg
                       width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -232,7 +235,7 @@ export default function Sidebar() {
                 )}
               </button>
               {isOpen && !sidebarCollapsed && item.children && (
-                <div className="ml-4 border-l pl-4 my-1" style={{ borderColor: '#1e3a5f' }}>
+                <div className="ml-4 border-l pl-4 my-1" style={{ borderColor: '#2a2a2a' }}>
                   {item.children.map((child) => (
                     <Link
                       key={child.href}
@@ -256,7 +259,7 @@ export default function Sidebar() {
       <button
         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         className="flex items-center justify-center py-3 border-t text-xs transition-colors"
-        style={{ borderColor: dark ? '#1e3a5f' : '#2d4a6a', color: '#64748b' }}
+        style={{ borderColor: dark ? '#242424' : '#2d4a6a', color: '#555555' }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'white'; }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#64748b'; }}
       >

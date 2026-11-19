@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ReactNode, useEffect } from 'react';
 import { useAdminStore } from '@/store/useAdminStore';
@@ -32,14 +32,14 @@ export default function Modal({ title, onClose, children, footer, wide }: Props)
         aria-modal="true"
         aria-label={title}
         className={`w-full rounded-xl border ${wide ? 'max-w-4xl' : 'max-w-xl'}`}
-        style={{ background: dark ? '#0d1b2e' : '#ffffff', borderColor: dark ? '#1e3a5f' : '#e2e8f0' }}
+        style={{ background: dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff', borderColor: dark ? '#1e1e2a' : '#e2e8f0' }}
       >
-        <div className="px-6 py-4 border-b" style={{ borderColor: dark ? '#1e3a5f' : '#e2e8f0' }}>
-          <h2 className="text-lg font-medium" style={{ color: dark ? '#f1f5f9' : '#0f172a' }}>{title}</h2>
+        <div className="px-6 py-4 border-b" style={{ borderColor: dark ? '#1e1e2a' : '#e2e8f0' }}>
+          <h2 className="text-lg font-medium" style={{ color: dark ? '#f0f0f0' : '#0f172a' }}>{title}</h2>
         </div>
         <div className="px-6 py-5">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t flex justify-end gap-2" style={{ borderColor: dark ? '#1e3a5f' : '#e2e8f0' }}>
+          <div className="px-6 py-4 border-t flex justify-end gap-2" style={{ borderColor: dark ? '#1e1e2a' : '#e2e8f0' }}>
             {footer}
           </div>
         )}

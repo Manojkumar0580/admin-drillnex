@@ -7,15 +7,15 @@ import { useAdminStore } from '@/store/useAdminStore';
 export function useColors() {
   const { theme } = useAdminStore();
   const dark = theme === 'dark';
-  const border = dark ? '#1e3a5f' : '#e2e8f0';
-  const text = dark ? '#f1f5f9' : '#0f172a';
+  const border = dark ? '#1e1e2a' : '#e2e8f0';
+  const text = dark ? '#e8e8f0' : '#0f172a';
   return {
     dark,
     border,
     text,
-    cardBg: dark ? '#0d1b2e' : '#ffffff',
-    muted: dark ? '#64748b' : '#94a3b8',
-    inputStyle: { background: dark ? '#0f1f35' : '#f8fafc', borderColor: border, color: text },
+    cardBg: dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff',
+    muted: dark ? '#58586a' : '#94a3b8',
+    inputStyle: { background: dark ? '#101016' : '#f8fafc', borderColor: border, color: text },
   };
 }
 

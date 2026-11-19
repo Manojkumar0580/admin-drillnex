@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -164,12 +164,12 @@ export default function DataCleanupPage() {
   const { theme } = useAdminStore();
   const isDark = theme === 'dark';
 
-  const bg        = isDark ? '#0f172a' : '#f8fafc';
-  const surface   = isDark ? '#1e293b' : '#ffffff';
-  const border    = isDark ? '#334155' : '#e2e8f0';
-  const text      = isDark ? '#f1f5f9' : '#0f172a';
-  const muted     = isDark ? '#94a3b8' : '#64748b';
-  const inputBg   = isDark ? '#0f172a' : '#f8fafc';
+  const bg        = isDark ? 'transparent' : '#f8fafc';
+  const surface   = isDark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const border    = isDark ? '#1e1e2a' : '#e2e8f0';
+  const text      = isDark ? '#f0f0f0' : '#0f172a';
+  const muted     = isDark ? '#666666' : '#64748b';
+  const inputBg   = isDark ? '#101016' : '#f8fafc';
 
   // ── Section tab ───────────────────────────────────────────────────────────────
   const [activeSection, setActiveSection] = useState<'live' | 'xlsx'>('live');
@@ -355,7 +355,7 @@ export default function DataCleanupPage() {
           cy={isDragging ? cy + ((drag?.startVal ?? 0) - (drag?.currentVal ?? 0)) * 0 : cy}
           r={4}
           fill={color}
-          stroke={isDark ? '#1e293b' : '#ffffff'}
+          stroke={isDark ? '#0b0b10' : '#ffffff'}
           strokeWidth={1.5}
           style={{ cursor: 'ns-resize', userSelect: 'none' }}
           onMouseDown={(e) =>
@@ -457,13 +457,13 @@ export default function DataCleanupPage() {
   };
 
   return (
-    <div style={{ padding: 24, background: bg, minHeight: '100vh', color: text }}>
+    <div style={{ padding: 0, color: text }}>
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Data Cleanup</h1>
-        <p style={{ fontSize: 13, color: muted, marginTop: 4 }}>
+        {/* <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Data Cleanup</h1> */}
+        {/* <p style={{ fontSize: 13, color: muted, marginTop: 4 }}>
           Visualize, edit, fill gaps, export and re-import well telemetry data.
-        </p>
+        </p> */}
       </div>
 
       {/* ── Section tabs ──────────────────────────────────────────────────────── */}

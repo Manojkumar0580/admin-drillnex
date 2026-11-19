@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAdminStore } from '@/store/useAdminStore';
@@ -148,10 +148,10 @@ function UploadModal({
   const [result,   setResult]   = useState<{ status: DocStatus; errorMsg: string | null; fileName: string | null } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const cardBg  = dark ? '#0d1b2e' : '#ffffff';
-  const border  = dark ? '#1e3a5f' : '#e2e8f0';
-  const text    = dark ? '#f1f5f9' : '#0f172a';
-  const muted   = dark ? '#64748b' : '#94a3b8';
+  const cardBg  = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const border  = dark ? '#1e1e2a' : '#e2e8f0';
+  const text    = dark ? '#f0f0f0' : '#0f172a';
+  const muted   = dark ? '#666666' : '#94a3b8';
   const overlay = 'rgba(0,0,0,0.65)';
 
   useEffect(() => {
@@ -272,12 +272,12 @@ export default function PlanningStatusPage() {
   const { theme } = useAdminStore();
   const dark = theme === 'dark';
 
-  const cardBg  = dark ? '#0d1b2e' : '#ffffff';
-  const border  = dark ? '#1e3a5f' : '#e2e8f0';
-  const text    = dark ? '#f1f5f9' : '#0f172a';
-  const muted   = dark ? '#64748b' : '#94a3b8';
-  const panelBg = dark ? '#071526' : '#f8fafc';
-  const inputSt = { background: dark ? '#0f1f35' : '#f8fafc', borderColor: border, color: text };
+  const cardBg  = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const border  = dark ? '#1e1e2a' : '#e2e8f0';
+  const text    = dark ? '#f0f0f0' : '#0f172a';
+  const muted   = dark ? '#666666' : '#94a3b8';
+  const panelBg = dark ? '#0b0b10' : '#f8fafc';
+  const inputSt = { background: dark ? '#101016' : '#f8fafc', borderColor: border, color: text };
 
   const { data: companies = [] } = useCompanies();
 
@@ -474,7 +474,7 @@ export default function PlanningStatusPage() {
                       borderBottom: i < filtered.length - 1 ? `1px solid ${border}` : undefined,
                       transition: 'background 0.15s',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = dark ? '#0f1f3540' : '#f8fafc')}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = dark ? '#ffffff08' : '#f8fafc')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
                     <td className="px-4 py-3 font-medium whitespace-nowrap" style={{ color: text }}>{row.companyName}</td>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -131,7 +131,7 @@ export default function LogMapsPage() {
     e.preventDefault();
     setFormError('');
     if (editing === 'new' && (!form.connectionId || !form.wellId || !form.uidWell || !form.uidWellbore || !form.uidLog)) {
-      setFormError('Connection, RigPulse well and the three WITSML identifiers are required');
+      setFormError('Connection, DrillNex well and the three WITSML identifiers are required');
       return;
     }
     save.mutate();
@@ -174,7 +174,7 @@ export default function LogMapsPage() {
           <table className="w-full text-sm" style={{ color: c.text }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${c.border}` }}>
-                {['Log', 'RigPulse Well', 'Source Connection', 'Data State', 'Interval (s)', 'Status', 'Rows', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
+                {['Log', 'DrillNex Well', 'Source Connection', 'Data State', 'Interval (s)', 'Status', 'Rows', ''].map((h) => <th key={h} className="text-left font-semibold py-3 pr-4">{h}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -249,7 +249,7 @@ export default function LogMapsPage() {
                     {connChoices.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
                   </select>
                 </FormRow>
-                <FormRow label="RigPulse Well" htmlFor="lm-well" hint="The well in RigPulse this data will be stored under.">
+                <FormRow label="DrillNex Well" htmlFor="lm-well" hint="The well in DrillNex this data will be stored under.">
                   <select id="lm-well" value={form.wellId} onChange={(e) => setForm({ ...form, wellId: e.target.value })} className={input} style={c.inputStyle}>
                     <option value="">Select a well</option>
                     {wellChoices.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}

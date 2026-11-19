@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useState } from 'react';
@@ -43,11 +43,11 @@ export default function AdminDashboardPage() {
   const [period, setPeriod] = useState('5 Minutes');
   const [range, setRange] = useState('Last Hour');
 
-  const cardBg = dark ? '#0d1b2e' : '#ffffff';
-  const cardBorder = dark ? '#1e3a5f' : '#e2e8f0';
-  const textPrimary = dark ? '#f1f5f9' : '#0f172a';
-  const textMuted = dark ? '#64748b' : '#94a3b8';
-  const gridColor = dark ? '#1e3a5f' : '#e2e8f0';
+  const cardBg = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const cardBorder = dark ? '#1e1e2a' : '#e2e8f0';
+  const textPrimary = dark ? '#f0f0f0' : '#0f172a';
+  const textMuted = dark ? '#666666' : '#94a3b8';
+  const gridColor = dark ? '#1e1e2a' : '#e2e8f0';
   const axisTick = dark ? '#64748b' : '#94a3b8';
 
   const overview = useQuery({
@@ -145,14 +145,14 @@ export default function AdminDashboardPage() {
             <div className="flex items-center gap-2">
               <label htmlFor="lag-range" className="text-xs" style={{ color: textMuted }}>Time Range</label>
               <select id="lag-range" value={range} onChange={(e) => setRange(e.target.value)} className="text-xs px-3 py-1.5 rounded-lg border outline-none cursor-pointer"
-                style={{ background: dark ? '#0f1f35' : '#f8fafc', borderColor: cardBorder, color: textPrimary }}>
+                style={{ background: dark ? '#101016' : '#f8fafc', borderColor: cardBorder, color: textPrimary }}>
                 {Object.keys(RANGES).map((k) => <option key={k}>{k}</option>)}
               </select>
             </div>
             <div className="flex items-center gap-2">
               <label htmlFor="lag-period" className="text-xs" style={{ color: textMuted }}>Period</label>
               <select id="lag-period" value={period} onChange={(e) => setPeriod(e.target.value)} className="text-xs px-3 py-1.5 rounded-lg border outline-none cursor-pointer"
-                style={{ background: dark ? '#0f1f35' : '#f8fafc', borderColor: cardBorder, color: textPrimary }}>
+                style={{ background: dark ? '#101016' : '#f8fafc', borderColor: cardBorder, color: textPrimary }}>
                 {Object.keys(PERIODS).map((k) => <option key={k}>{k}</option>)}
               </select>
             </div>

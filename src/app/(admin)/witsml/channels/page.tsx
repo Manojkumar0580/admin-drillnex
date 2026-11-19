@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -105,7 +105,7 @@ export default function ChannelsPage() {
       <div className="rounded-xl border p-6" style={{ background: c.cardBg, borderColor: c.border }}>
         <h2 className="text-base font-medium" style={{ color: c.text }}>Check a mnemonic</h2>
         <p className="text-xs mt-0.5 mb-3" style={{ color: c.muted }}>
-          Type a name as it appears in a customer&apos;s data (for example <code>SPPA</code>) to see how RigPulse would read it.
+          Type a name as it appears in a customer&apos;s data (for example <code>SPPA</code>) to see how DrillNex would read it.
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <input aria-label="Mnemonic to check" value={probe} onChange={(e) => setProbe(e.target.value)} placeholder="Mnemonic" className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 260 }} />
@@ -130,7 +130,7 @@ export default function ChannelsPage() {
         <div className="px-6 py-4 border-b flex items-center justify-between gap-3 flex-wrap" style={{ borderColor: c.border }}>
           <div>
             <h2 className="text-base font-medium" style={{ color: c.text }}>Custom channels</h2>
-            <p className="text-xs mt-0.5" style={{ color: c.muted }}>Channel names you have added. Use New Channel when a customer's data uses a name RigPulse does not know. They apply to every customer, to CSV imports and to live WITSML feeds.</p>
+            <p className="text-xs mt-0.5" style={{ color: c.muted }}>Channel names you have added. Use New Channel when a customer's data uses a name DrillNex does not know. They apply to every customer, to CSV imports and to live WITSML feeds.</p>
           </div>
           <div className="flex items-center gap-3">
             <input aria-label="Search channels" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="text-sm px-3 py-2 rounded-lg border outline-none" style={{ ...c.inputStyle, width: 200 }} />
@@ -198,7 +198,7 @@ export default function ChannelsPage() {
                     <td className="py-3 pr-4 align-top whitespace-nowrap">{ch.unit}</td>
                     <td className="py-3 pr-4 align-top whitespace-nowrap" style={{ color: c.muted }}>{ch.min} to {ch.max}</td>
                     <td className="py-3 pr-4 align-top">
-                      {shown.map((a) => <span key={a} className={chip} style={{ background: c.dark ? '#1e3a5f' : '#e2e8f0', color: c.text }}>{a}</span>)}
+                      {shown.map((a) => <span key={a} className={chip} style={{ background: c.dark ? '#2a2a2a' : '#e2e8f0', color: c.text }}>{a}</span>)}
                       {ch.aliases.length > VISIBLE_ALIASES && (
                         <button onClick={() => setExpanded((cur) => (open_ ? cur.filter((k) => k !== ch.key) : [...cur, ch.key]))} className="text-xs underline" style={{ color: c.muted }}>
                           {open_ ? 'show fewer' : `+${ch.aliases.length - VISIBLE_ALIASES} more`}
