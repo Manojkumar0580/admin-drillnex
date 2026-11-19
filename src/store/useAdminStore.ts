@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -17,6 +17,6 @@ export const useAdminStore = create<AdminStore>()(
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       setSidebarCollapsed: (v) => set({ sidebarCollapsed: v }),
     }),
-    { name: 'rigpulse-admin-ui' }
+    { name: 'drillnex-admin-ui' }
   )
 );

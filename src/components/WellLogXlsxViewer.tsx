@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
@@ -221,7 +221,7 @@ function HoverOverlay({ hoverY, hoverRow, activeCols, totalH, colTrackX }: {
           <g key={col.key}>
             <circle cx={cx} cy={hoverY} r={4.5} fill={col.color} stroke="white" strokeWidth={1.5} />
             <rect x={pillX} y={hoverY - 9} width={pillW} height={17} rx={4}
-              fill="#071a2e" stroke={col.color} strokeWidth={1.2} />
+              fill="#141414" stroke={col.color} strokeWidth={1.2} />
             <text x={pillX + pillW / 2} y={hoverY + 4.5} textAnchor="middle"
               fontSize={10} fill="white" fontFamily="monospace" fontWeight="700">
               {displayStr}
@@ -238,7 +238,7 @@ function HoverOverlay({ hoverY, hoverRow, activeCols, totalH, colTrackX }: {
 function WellLogView({ rows, cols, visibleCols }: {
   rows: DataRow[]; cols: ColMeta[]; visibleCols: Set<string>;
 }) {
-  const { border, muted } = useColors();
+  const { dark, border, muted } = useColors();
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [tipPos,   setTipPos]   = useState({ x: 0, y: 0 });
   const [zoomIdx,  setZoomIdx]  = useState(DEFAULT_ZOOM_IDX);
@@ -248,10 +248,10 @@ function WellLogView({ rows, cols, visibleCols }: {
   const labelStep  = Math.max(1, Math.ceil(11 / pxPerRow));
   const activeCols = cols.filter((c) => visibleCols.has(c.key));
 
-  const bg         = '#050e1a';
-  const trackBg    = '#071224';
-  const gridColor  = '#1a3050';
-  const depthColor = '#4fc3f7';
+  const bg         = dark ? '#070709' : '#f1f5f9';
+  const trackBg    = dark ? '#0f0f14' : '#ffffff';
+  const gridColor  = dark ? '#1a1a24' : '#e2e8f0';
+  const depthColor = dark ? '#6b7a9a' : '#475569';
   const totalH     = rows.length * pxPerRow;
 
   const depthTicks = useMemo(() =>
@@ -361,14 +361,14 @@ function WellLogView({ rows, cols, visibleCols }: {
           <button onClick={zoomIn} disabled={zoomIdx === ZOOM_STEPS.length - 1}
             title="Zoom in"
             className="flex items-center justify-center rounded-lg font-bold text-base disabled:opacity-30"
-            style={{ width: 28, height: 28, background: '#0f2040', border: '1px solid #1a3050', color: '#4fc3f7' }}>
+            style={{ width: 28, height: 28, background: dark ? '#1a1a1a' : '#e2e8f0', border: `1px solid ${gridColor}`, color: depthColor }}>
             +
           </button>
-          <span style={{ color: '#4fc3f7', fontSize: 10, fontFamily: 'monospace' }}>{pxPerRow}px</span>
+          <span style={{ color: depthColor, fontSize: 10, fontFamily: 'monospace' }}>{pxPerRow}px</span>
           <button onClick={zoomOut} disabled={zoomIdx === 0}
             title="Zoom out"
             className="flex items-center justify-center rounded-lg font-bold text-base disabled:opacity-30"
-            style={{ width: 28, height: 28, background: '#0f2040', border: '1px solid #1a3050', color: '#4fc3f7' }}>
+            style={{ width: 28, height: 28, background: dark ? '#1a1a1a' : '#e2e8f0', border: `1px solid ${gridColor}`, color: depthColor }}>
             −
           </button>
         </div>
@@ -409,10 +409,10 @@ function WellLogView({ rows, cols, visibleCols }: {
       {hoverRow && hoverIdx !== null && (
         <div style={{
           position: 'fixed', left: tipPos.x + 14, top: tipPos.y - 14,
-          zIndex: 9999, background: '#0d2040', border: '1px solid #4fc3f7',
+          zIndex: 9999, background: dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff', border: `1px solid ${depthColor}`,
           borderRadius: 6, padding: '3px 9px', pointerEvents: 'none',
           boxShadow: '0 2px 10px rgba(0,0,0,0.5)', fontSize: 11,
-          fontWeight: 700, color: '#4fc3f7', letterSpacing: 0.3, whiteSpace: 'nowrap',
+          fontWeight: 700, color: depthColor, letterSpacing: 0.3, whiteSpace: 'nowrap',
         }}>
           {hoverRow.depth} ft
         </div>
@@ -429,7 +429,7 @@ function TableView({ rows, cols, hasTime }: { rows: DataRow[]; cols: ColMeta[]; 
   return (
     <div className="overflow-auto rounded-xl border" style={{ borderColor: border, maxHeight: 600 }}>
       <table className="w-full text-xs border-collapse" style={{ fontFamily: 'monospace' }}>
-        <thead className="sticky top-0 z-10" style={{ background: dark ? '#0d1b2e' : '#f1f5f9' }}>
+        <thead className="sticky top-0 z-10" style={{ background: dark ? '#1a1a1a' : '#f1f5f9' }}>
           <tr>
             <th className="px-3 py-2 text-right border-b font-semibold" style={{ borderColor: border, color: '#4fc3f7' }}>DEPTH</th>
             {hasTime && <th className="px-3 py-2 text-left border-b font-semibold" style={{ borderColor: border, color: muted }}>Date/Time</th>}
@@ -660,7 +660,7 @@ export default function WellLogXlsxViewer() {
       {/* Upload zone */}
       <div
         className="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 py-10 cursor-pointer"
-        style={{ borderColor: border, background: dark ? '#071224' : '#f8fafc' }}
+        style={{ borderColor: border, background: dark ? 'transparent' : '#f8fafc' }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
         onClick={() => fileRef.current?.click()}

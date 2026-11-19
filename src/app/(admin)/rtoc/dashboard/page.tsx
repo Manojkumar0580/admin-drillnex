@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -19,9 +19,9 @@ export default function RtocDashboardPage() {
   const { theme } = useAdminStore();
   const dark = theme === 'dark';
 
-  const cardBg     = dark ? '#0d1b2e' : '#ffffff';
-  const cardBorder = dark ? '#1e3a5f' : '#e2e8f0';
-  const textPrimary = dark ? '#f1f5f9' : '#0f172a';
+  const cardBg     = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const cardBorder = dark ? '#1e1e2a' : '#e2e8f0';
+  const textPrimary = dark ? '#f0f0f0' : '#0f172a';
 
   const overview = useQuery({
     queryKey: ['stats-overview'],

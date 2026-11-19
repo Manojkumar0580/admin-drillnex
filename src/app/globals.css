@@ -2,8 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-heading: var(--font-heading), 'Barlow Condensed', system-ui, sans-serif;
+  --font-body:    var(--font-body), 'Barlow', system-ui, sans-serif;
+  --font-mono:    var(--font-mono), 'Share Tech Mono', monospace;
+}
+
 * { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; padding: 0; }
+html, body { height: 100%; margin: 0; padding: 0; font-family: var(--font-body); }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+/* ── Premium dark scrollbars ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #252530; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #353548; }
+
+/* ── Premium text selection ─────────────────────────────────────────────── */
+::selection { background: rgba(26,140,255,0.28); color: #fff; }
+
+/* ── Smooth transitions on interactive elements ─────────────────────────── */
+button, input, select, textarea { transition: background 0.15s, border-color 0.15s, box-shadow 0.15s; }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

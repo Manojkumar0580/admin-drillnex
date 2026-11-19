@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -134,13 +134,13 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
   const [hover, setHover]   = useState<HoverSnap | null>(null);
   const rafRef  = useRef<number | null>(null);
 
-  const headerBg = '#0d1b2e';
-  const bodyBg0  = dark ? '#060f1a' : '#f1f5f9';
-  const bodyBg1  = dark ? '#071526' : '#f8fafc';
-  const timeBg   = dark ? '#0a1628' : '#dde4ee';
-  const gridClr  = dark ? '#1e3a5f88' : '#94a3b844';
-  const timeTxt  = dark ? '#94a3b8'  : '#475569';
-  const divClr   = dark ? '#1e3a5f'  : '#cbd5e1';
+  const headerBg = dark ? '#0f0f14' : '#e8ecf4';
+  const bodyBg0  = dark ? '#070709' : '#f1f5f9';
+  const bodyBg1  = dark ? '#0b0b10' : '#f8fafc';
+  const timeBg   = dark ? '#0d0d12' : '#dde4ee';
+  const gridClr  = dark ? 'rgba(80,100,160,0.15)' : '#94a3b844';
+  const timeTxt  = dark ? '#6b7a9a'  : '#475569';
+  const divClr   = dark ? '#1a1a24'  : '#cbd5e1';
   const nowClr   = '#22c55e';
 
   // Auto-scroll to bottom whenever new points arrive
@@ -250,7 +250,7 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
           const maxLbl = p.max >= 1000 ? `${(p.max / 1000).toFixed(0)}K` : String(p.max);
           return (
             <g key={p.key}>
-              <line x1={x} y1={0} x2={x} y2={HEADER_H} stroke='#334155' strokeWidth={1} />
+              <line x1={x} y1={0} x2={x} y2={HEADER_H} stroke='#242424' strokeWidth={1} />
               {/* Param name */}
               <text x={x + TRACK_W / 2} y={15} textAnchor='middle' fill={p.color} fontSize={11} fontWeight='bold' letterSpacing='0.05em'>
                 {p.label}
@@ -275,7 +275,7 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
         })}
 
         {/* Time column header */}
-        <line x1={LOG_PARAMS.length * TRACK_W} y1={0} x2={LOG_PARAMS.length * TRACK_W} y2={HEADER_H} stroke='#334155' strokeWidth={1} />
+        <line x1={LOG_PARAMS.length * TRACK_W} y1={0} x2={LOG_PARAMS.length * TRACK_W} y2={HEADER_H} stroke='#242424' strokeWidth={1} />
         <text
           x={LOG_PARAMS.length * TRACK_W + TIME_W / 2}
           y={40}
@@ -408,8 +408,8 @@ function LogView({ points, dark }: { points: TelemetryMessage[]; dark: boolean }
           <div style={{
             position: 'fixed',
             left: tooltipX, top: tooltipY,
-            background: '#060f1a',
-            border: '1px solid #1e3a5f',
+            background: '#141414',
+            border: '1px solid #2a2a2a',
             borderRadius: 10, padding: '10px 14px',
             zIndex: 9999, pointerEvents: 'none',
             fontSize: 12, color: '#f1f5f9',
@@ -466,7 +466,7 @@ function ParamTile({ p, value, prevValue, quality, isActive, onClick, dark, bord
     else if (diff < -range * 0.005) trend = '↓';
   }
 
-  const tooltipBg     = dark ? '#060f1a'  : '#1e293b';
+  const tooltipBg     = dark ? '#141414'  : '#1e293b';
   const tooltipBorder = `${p.color}66`;
 
   return (
@@ -550,11 +550,11 @@ function WellFeed({ wellId, wellName, dark }: { wellId: string; wellName: string
     return () => clearInterval(id);
   }, []);
 
-  const cardBg  = dark ? '#0d1b2e' : '#ffffff';
-  const border  = dark ? '#1e3a5f' : '#e2e8f0';
-  const text    = dark ? '#f1f5f9' : '#0f172a';
-  const muted   = dark ? '#64748b' : '#94a3b8';
-  const panelBg = dark ? '#071526' : '#f8fafc';
+  const cardBg  = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const border  = dark ? '#1e1e2a' : '#e2e8f0';
+  const text    = dark ? '#f0f0f0' : '#0f172a';
+  const muted   = dark ? '#666666' : '#94a3b8';
+  const panelBg = dark ? '#0b0b10' : '#f8fafc';
 
   const last      = points[points.length - 1];
   const live      = conn === 'connected' && !!last && now - lastAt < 4000;
@@ -674,11 +674,11 @@ function DemoWellFeed({ dark, onStop }: { dark: boolean; onStop: () => void }) {
     return () => clearInterval(id);
   }, []);
 
-  const cardBg  = dark ? '#0d1b2e' : '#ffffff';
-  const border  = dark ? '#1e3a5f' : '#e2e8f0';
-  const text    = dark ? '#f1f5f9' : '#0f172a';
-  const muted   = dark ? '#64748b' : '#94a3b8';
-  const panelBg = dark ? '#071526' : '#f8fafc';
+  const cardBg  = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const border  = dark ? '#1e1e2a' : '#e2e8f0';
+  const text    = dark ? '#f0f0f0' : '#0f172a';
+  const muted   = dark ? '#666666' : '#94a3b8';
+  const panelBg = dark ? '#0b0b10' : '#f8fafc';
 
   const last      = points[points.length - 1];
   const activeDef = PARAMS.find((p) => p.key === active)!;
@@ -792,11 +792,11 @@ export default function LiveSensorSection({ dark }: { dark: boolean }) {
   const [compError,  setCompError]  = useState('');
   const [demoMode,   setDemoMode]   = useState(false);
 
-  const cardBg    = dark ? '#0d1b2e' : '#ffffff';
-  const border    = dark ? '#1e3a5f' : '#e2e8f0';
-  const text      = dark ? '#f1f5f9' : '#0f172a';
-  const muted     = dark ? '#64748b' : '#94a3b8';
-  const inputStyle = { background: dark ? '#0f1f35' : '#f8fafc', borderColor: border, color: text };
+  const cardBg    = dark ? 'linear-gradient(160deg, #1c1c22 0%, #101013 100%)' : '#ffffff';
+  const border    = dark ? '#1e1e2a' : '#e2e8f0';
+  const text      = dark ? '#f0f0f0' : '#0f172a';
+  const muted     = dark ? '#666666' : '#94a3b8';
+  const inputStyle = { background: dark ? '#101016' : '#f8fafc', borderColor: border, color: text };
 
   useEffect(() => {
     apiFetch<{ success: boolean; data: CompanyRow[] }>('companies')
@@ -929,6 +929,24 @@ export default function LiveSensorSection({ dark }: { dark: boolean }) {
           <p className='text-xs opacity-60'>Real-time data streams via WITSML connection</p>
         </div>
       )}
+
+      {/* Operational Disclaimer */}
+      <div
+        className='mt-4 px-4 py-2.5 rounded-lg border flex items-center justify-between text-xs gap-3 flex-wrap'
+        style={{
+          background: dark ? 'rgba(15, 23, 42, 0.6)' : 'rgba(241, 245, 249, 0.8)',
+          borderColor: dark ? 'rgba(30, 58, 95, 0.6)' : 'rgba(226, 232, 240, 0.8)',
+          color: muted,
+        }}
+      >
+        <div className='flex items-center gap-2'>
+          <span className='text-amber-500 font-semibold'>⚠️ NOTICE:</span>
+          <span>
+            Telemetry and live sensor streams are provided for <strong>situational awareness &amp; surveillance only</strong>. Not intended for use as a primary safety system, emergency shutdown, or direct well control.
+          </span>
+        </div>
+        <span className='font-mono text-[11px] opacity-75'>WITSML 1.4.1.1 STREAMS</span>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useAdminStore } from '@/store/useAdminStore';
 import { usePathname, useRouter } from 'next/navigation';
@@ -52,8 +52,8 @@ export default function Header() {
     <header
       className="flex items-center h-14 px-6 border-b flex-shrink-0"
       style={{
-        background: dark ? '#0f1f35' : '#ffffff',
-        borderColor: dark ? '#1e3a5f' : '#e2e8f0',
+        background: dark ? '#0d0d12' : '#ffffff',
+        borderColor: dark ? '#1a1a24' : '#e2e8f0',
       }}
     >
       {/* Left — Page title */}
@@ -77,7 +77,7 @@ export default function Header() {
             </svg>
           </div>
           <span className="text-sm font-bold" style={{ color: dark ? '#ffffff' : '#0f172a' }}>
-            RigPulse <span style={{ color: '#64b5f6' }}>Admin</span>
+            DrillNex <span style={{ color: '#64b5f6' }}>Admin</span>
           </span>
         </div>
       </div>
@@ -87,8 +87,8 @@ export default function Header() {
         {/* Bell */}
         <button
           className="relative p-2 rounded-lg transition-colors"
-          style={{ color: dark ? '#94a3b8' : '#64748b' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = dark ? '#1e3a5f' : '#f1f5f9'; }}
+          style={{ color: dark ? '#888' : '#64748b' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = dark ? '#1f1f1f' : '#f1f5f9'; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -102,9 +102,9 @@ export default function Header() {
           onClick={toggleTheme}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
           style={{
-            background: dark ? '#1e3a5f' : '#f1f5f9',
-            color: dark ? '#93c5fd' : '#475569',
-            border: dark ? '1px solid #2d5a8f' : '1px solid #e2e8f0',
+            background: dark ? '#1a1a1a' : '#f1f5f9',
+            color: dark ? '#aaaaaa' : '#475569',
+            border: dark ? '1px solid #2a2a2a' : '1px solid #e2e8f0',
           }}
           title={dark ? 'Switch to Light mode' : 'Switch to Dark mode'}
         >
@@ -126,7 +126,7 @@ export default function Header() {
         </button>
 
         {/* Profile */}
-        <div className="flex items-center gap-3 pl-3 border-l" style={{ borderColor: dark ? '#1e3a5f' : '#e2e8f0' }}>
+        <div className="flex items-center gap-3 pl-3 border-l" style={{ borderColor: dark ? '#1e1e2a' : '#e2e8f0' }}>
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
             style={{ background: '#1d6fbf', color: 'white' }}>
             {initials(admin?.name)}
@@ -140,9 +140,9 @@ export default function Header() {
             onClick={signOut}
             className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
             style={{
-              background: dark ? '#1e3a5f' : '#f1f5f9',
-              color: dark ? '#93c5fd' : '#475569',
-              border: dark ? '1px solid #2d5a8f' : '1px solid #e2e8f0',
+              background: dark ? '#1a1a1a' : '#f1f5f9',
+              color: dark ? '#aaaaaa' : '#475569',
+              border: dark ? '1px solid #2a2a2a' : '1px solid #e2e8f0',
             }}
           >
             Sign out
