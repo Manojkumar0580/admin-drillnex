@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -19,12 +19,7 @@ const COLORS = ['#1a8cff', '#f59e0b', '#22c55e', '#a78bfa', '#ef4444', '#14b8a6'
 const DEFAULT_CHANNELS = ['rop', 'wob', 'spp'];
 const MAX_RANGE_FT = 30000; // the API limit per request
 
-/**
- * Depth-indexed data (MWD/LWD, mud logs) of one well, drawn the way a log is read: depth runs down
- * the page, one track per channel. Values are binned by depth on the server, so a whole hole stays a
- * few hundred points; narrow the range to see more detail.
- */
-export default function DepthDataPage() {
+function DepthDataContent() {
   const c = useColors();
   const searchParams = useSearchParams();
   const [companyId, setCompanyId] = useState('');
@@ -125,5 +120,14 @@ export default function DepthDataPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function DepthDataPage() {
+  const c = useColors();
+  return (
+    <Suspense fallback={<div style={{ color: c.muted, padding: 24, fontSize: 13 }}>Loading depth data…</div>}>
+      <DepthDataContent />
+    </Suspense>
   );
 }
